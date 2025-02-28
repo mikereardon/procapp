@@ -1,0 +1,47 @@
+<nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="<%= root_path %>">Plant Procure App</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarText">
+      <!-- Left side navigation -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link <%= current_page?(root_path) ? 'active' : '' %>" <%= current_page?(root_path) ? 'aria-current="page"' : '' %> href="<%= root_path %>">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Features</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Pricing</a>
+        </li>
+      </ul>
+      
+      <!-- Right side authentication links -->
+      <ul class="navbar-nav mb-2 mb-lg-0">
+        <% if user_signed_in? %>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              Logged in as <%= current_user.company_name %> (<%= current_user.role.capitalize %>)
+            </a>
+          </li>
+          <li class="nav-item d-flex align-items-center">
+            <form action="<%= destroy_user_session_path %>" method="post" class="m-0 d-flex align-items-center">
+              <input type="hidden" name="_method" value="delete">
+              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+              <button type="submit" class="nav-link bg-transparent border-0">Log Out</button>
+            </form>
+          </li>
+        <% else %>
+          <li class="nav-item">
+            <a class="nav-link <%= controller_name == 'sessions' && action_name == 'new' ? 'active' : '' %>" href="<%= new_user_session_path %>">Log In</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= controller_name == 'registrations' && action_name == 'new' ? 'active' : '' %>" href="<%= new_user_registration_path %>">Sign Up</a>
+          </li>
+        <% end %>  
+      </ul>
+    </div>
+  </div>
+</nav>

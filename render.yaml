@@ -2,7 +2,7 @@ databases:
   - name: mysite
     databaseName: mysite
     user: mysite
-    plan: starter
+    plan: basic-256mb
 
 services:
   - type: web

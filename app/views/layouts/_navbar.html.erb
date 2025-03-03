@@ -22,7 +22,6 @@
       <ul class="navbar-nav mb-2 mb-lg-0">
         <% if user_signed_in? %>
           <li class="nav-item">
-            <a href="#" class="nav-link">
               Logged in as <%= current_user.company_name %> (<%= current_user.role.capitalize %>)
             </a>
           </li>

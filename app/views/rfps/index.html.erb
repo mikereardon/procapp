@@ -1,0 +1,42 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Request for Proposals</h1>
+    <% if current_user.buyer? %>
+      <%= link_to "Create New RFP", new_rfp_path, class: "btn btn-primary" %>
+    <% elsif current_user.supplier? %>
+      <%= link_to "View Interested RFPs", interested_rfps_path, class: "btn btn-outline-primary" %>
+    <% end %>
+  </div>
+
+  <% if @rfps.empty? %>
+    <div class="alert alert-info">
+      <% if current_user.buyer? %>
+        You haven't created any RFPs yet.
+      <% else %>
+        There are no published RFPs available at this time.
+      <% end %>
+    </div>
+  <% else %>
+    <div class="row">
+      <% @rfps.each do |rfp| %>
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title"><%= rfp.title %></h5>
+              <h6 class="card-subtitle mb-2 text-muted">
+                Deadline: <%= rfp.submission_deadline.strftime('%B %d, %Y') %>
+              </h6>
+              <p class="card-text"><%= truncate(rfp.description, length: 150) %></p>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-<%= rfp.status == 'published' ? 'success' : (rfp.status == 'draft' ? 'warning' : 'secondary') %>">
+                  <%= rfp.status.titleize %>
+                </span>
+                <%= link_to "View Details", rfp_path(rfp), class: "btn btn-sm btn-outline-primary" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

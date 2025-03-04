@@ -1,0 +1,35 @@
+<!-- app/views/rfps/interested.html.erb -->
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>RFPs You're Interested In</h1>
+    <%= link_to "View All RFPs", rfps_path, class: "btn btn-outline-primary" %>
+  </div>
+
+  <% if @rfps.empty? %>
+    <div class="alert alert-info">
+      You haven't registered interest in any RFPs yet.
+    </div>
+  <% else %>
+    <div class="row">
+      <% @rfps.each do |rfp| %>
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title"><%= rfp.title %></h5>
+              <h6 class="card-subtitle mb-2 text-muted">
+                Deadline: <%= rfp.submission_deadline.strftime('%B %d, %Y') %>
+              </h6>
+              <p class="card-text"><%= truncate(rfp.description, length: 150) %></p>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-<%= rfp.status == 'published' ? 'success' : 'secondary' %>">
+                  <%= rfp.status.titleize %>
+                </span>
+                <%= link_to "View Details", rfp_path(rfp), class: "btn btn-sm btn-outline-primary" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

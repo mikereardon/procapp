@@ -10,9 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_02_28_111316) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_04_151819) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "rfp_interests", force: :cascade do |t|
+    t.bigint "rfp_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["rfp_id"], name: "index_rfp_interests_on_rfp_id"
+    t.index ["user_id"], name: "index_rfp_interests_on_user_id"
+  end
+
+  create_table "rfps", force: :cascade do |t|
+    t.string "title"
+    t.text "description"
+    t.datetime "submission_deadline"
+    t.string "status"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_rfps_on_user_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
@@ -27,4 +47,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_02_28_111316) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "rfp_interests", "rfps"
+  add_foreign_key "rfp_interests", "users"
+  add_foreign_key "rfps", "users"
 end

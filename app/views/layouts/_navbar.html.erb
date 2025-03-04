@@ -21,6 +21,20 @@
       <!-- Right side authentication links -->
       <ul class="navbar-nav mb-2 mb-lg-0">
         <% if user_signed_in? %>
+
+
+          <li class="nav-item">
+            <%= link_to "RFPs", rfps_path, class: "nav-link #{current_page?(rfps_path) ? 'active' : ''}" %>
+          </li>
+          <% if current_user.supplier? %>
+            <li class="nav-item">
+              <%= link_to "My Interests", interested_rfps_path, class: "nav-link #{current_page?(interested_rfps_path) ? 'active' : ''}" %>
+            </li>
+          <% end %>
+
+
+
+
           <li class="nav-item">
             <a class="nav-link">
               Logged in as <%= current_user.company_name %> (<%= current_user.role.capitalize %>)

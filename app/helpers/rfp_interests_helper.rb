@@ -1,0 +1,2 @@
+module RfpInterestsHelper
+end

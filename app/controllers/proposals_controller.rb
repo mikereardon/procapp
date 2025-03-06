@@ -38,23 +38,19 @@ class ProposalsController < ApplicationController
   def new
     @proposal = current_user.proposals.build(rfp: @rfp)
 
-    # Debug log
-    Rails.logger.debug "Creating new proposal for RFP: #{@rfp.id}"
-
-    if @proposal.save(validate: false)
-      Rails.logger.debug "Proposal saved with ID: #{@proposal.id}"
-      ProposalSection.create_defaults_for(@proposal)
-
-      # Count sections after creation
-      @sections = @proposal.proposal_sections.reload
-      Rails.logger.debug "Created #{@sections.count} sections"
-
-      @sections = @sections.order(position: :asc)
-      @proposal.line_items.build
-    else
-      Rails.logger.error "Failed to create proposal: #{@proposal.errors.full_messages.join(', ')}"
-      redirect_to rfp_path(@rfp), alert: "Could not create proposal"
+    # Don't save to the database yet, just build in memory
+    @sections = ProposalSection::STANDARD_SECTIONS.map do |section_attrs|
+      @proposal.proposal_sections.build(
+        title: section_attrs[:title],
+        position: section_attrs[:position]
+      )
     end
+
+    # Build a blank line item
+    @proposal.line_items.build
+
+    # Debug log
+    Rails.logger.debug "Building new proposal for RFP: #{@rfp.id} (not saved yet)"
   end
 
   def create
@@ -67,9 +63,28 @@ class ProposalsController < ApplicationController
         section.update(content: "") if section.content.nil?
       end
 
+      # If no sections were created through params, create the defaults
+      if @proposal.proposal_sections.empty?
+        ProposalSection.create_defaults_for(@proposal)
+      end
+
       redirect_to rfp_proposal_path(@rfp, @proposal), notice: "Proposal was successfully created."
     else
-      @sections = @proposal.proposal_sections.order(position: :asc)
+      # If validation fails, rebuild the sections for the form
+      if @proposal.proposal_sections.empty?
+        @sections = ProposalSection::STANDARD_SECTIONS.map do |section_attrs|
+          @proposal.proposal_sections.build(
+            title: section_attrs[:title],
+            position: section_attrs[:position]
+          )
+        end
+      else
+        @sections = @proposal.proposal_sections.order(position: :asc)
+      end
+
+      # Ensure there's at least one line item for the form
+      @proposal.line_items.build if @proposal.line_items.empty?
+
       render :new, status: :unprocessable_entity
     end
   end

@@ -9,6 +9,9 @@ class Rfp < ApplicationRecord
   has_many :rfp_interests, dependent: :destroy
   has_many :interested_suppliers, through: :rfp_interests, source: :user
 
+  has_many :proposals, dependent: :destroy
+
+
   enum status: {
     draft: "draft",
     published: "published",

@@ -10,9 +10,77 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_04_151819) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_06_124940) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "action_text_rich_texts", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "body"
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
+  end
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "line_items", force: :cascade do |t|
+    t.bigint "proposal_id", null: false
+    t.string "description"
+    t.decimal "quantity"
+    t.decimal "unit_price"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["proposal_id"], name: "index_line_items_on_proposal_id"
+  end
+
+  create_table "proposal_sections", force: :cascade do |t|
+    t.bigint "proposal_id", null: false
+    t.string "title"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["proposal_id"], name: "index_proposal_sections_on_proposal_id"
+  end
+
+  create_table "proposals", force: :cascade do |t|
+    t.bigint "rfp_id", null: false
+    t.bigint "user_id", null: false
+    t.string "title"
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["rfp_id"], name: "index_proposals_on_rfp_id"
+    t.index ["user_id"], name: "index_proposals_on_user_id"
+  end
 
   create_table "rfp_interests", force: :cascade do |t|
     t.bigint "rfp_id", null: false
@@ -48,6 +116,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_04_151819) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "line_items", "proposals"
+  add_foreign_key "proposal_sections", "proposals"
+  add_foreign_key "proposals", "rfps"
+  add_foreign_key "proposals", "users"
   add_foreign_key "rfp_interests", "rfps"
   add_foreign_key "rfp_interests", "users"
   add_foreign_key "rfps", "users"

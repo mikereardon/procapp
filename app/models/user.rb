@@ -11,6 +11,8 @@ class User < ApplicationRecord
   has_many :rfps, dependent: :destroy
   has_many :rfp_interests, dependent: :destroy
   has_many :interested_rfps, through: :rfp_interests, source: :rfp
+  has_many :proposals, dependent: :destroy
+
 
   def buyer?
     role == "buyer"

@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   resources :rfps do
     resources :rfp_interests, only: [ :create, :destroy ]
+    resources :proposals
   end
 
   # Add a route for viewing interested RFPs

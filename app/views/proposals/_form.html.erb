@@ -1,0 +1,195 @@
+<!-- app/views/proposals/_form.html.erb -->
+<%= form_with(model: [@rfp, @proposal]) do |form| %>
+  <% if @proposal.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(@proposal.errors.count, "error") %> prohibited this proposal from being saved:</h4>
+      <ul>
+        <% @proposal.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h4>Proposal Details</h4>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <%= form.label :title, class: "form-label" %>
+          <%= form.text_field :title, class: "form-control" %>
+        </div>
+
+        <div class="mb-3">
+          <%= form.label :status, class: "form-label" %>
+          <% statuses = @proposal.new_record? ? ['draft', 'submitted'] : ['draft', 'submitted'] %>
+          <%= form.select :status, statuses.map { |s| [s.titleize, s] }, {}, class: "form-select" %>
+          <div class="form-text">
+            Once submitted, the proposal cannot be edited. Save as draft to make changes later.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proposal Sections with Rich Text Editors -->
+  <div class="mb-4">
+  <h4 class="mb-3">Proposal Content</h4>
+  
+  <% @sections.each do |section| %>
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5><%= section.title %></h5>
+      </div>
+      <div class="card-body">
+        <%= form.fields_for :proposal_sections, section do |section_form| %>
+          <%= section_form.hidden_field :id %>
+          <%= section_form.hidden_field :title %>
+          <%= section_form.hidden_field :position %>
+          
+          <!-- Rich Text Editor -->
+          <%= section_form.rich_text_area :content, class: "form-control" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+  <!-- In app/views/proposals/_form.html.erb -->
+<!-- Line Items (Pricing) -->
+<div class="mb-4">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4>Pricing Details</h4>
+      <button type="button" class="btn btn-sm btn-outline-primary" id="add-line-item">
+        Add Item
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="line-items-table">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 50%;">Description</th>
+              <th class="text-center">Quantity</th>
+              <th class="text-center">Unit Price</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <%= form.fields_for :line_items do |line_item_form| %>
+              <tr class="line-item-row">
+                <td>
+                  <%= line_item_form.text_field :description, class: "form-control" %>
+                </td>
+                <td>
+                  <%= line_item_form.number_field :quantity, min: 1, step: 1, class: "form-control text-end" %>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text">£</span>
+                    <%= line_item_form.number_field :unit_price, min: 0, step: 'any', class: "form-control text-end" %>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <% unless line_item_form.object.new_record? %>
+                    <%= line_item_form.hidden_field :_destroy, class: 'destroy-flag' %>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-line-item">Remove</button>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+            <tr id="line-item-template" style="display: none;">
+              <td>
+                <input class="form-control" type="text" name="proposal[line_items_attributes][__INDEX__][description]">
+              </td>
+              <td>
+                <input class="form-control text-end" type="number" min="1" step="1" name="proposal[line_items_attributes][__INDEX__][quantity]">
+              </td>
+              <td>
+                <div class="input-group">
+                  <span class="input-group-text">£</span>
+                  <input class="form-control text-end" type="number" min="0" step="any" name="proposal[line_items_attributes][__INDEX__][unit_price]">
+                </div>
+              </td>
+              <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger remove-line-item">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="d-flex justify-content-between mt-4">
+    <%= link_to "Cancel", @proposal.persisted? ? rfp_proposal_path(@rfp, @proposal) : rfp_path(@rfp), class: "btn btn-outline-secondary" %>
+    <%= form.submit class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<!-- Near the bottom of app/views/proposals/_form.html.erb -->
+<script>
+  document.addEventListener('turbo:load', function() {
+    setupLineItems();
+  });
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    setupLineItems();
+  });
+  
+  function setupLineItems() {
+    // Line Items dynamic handling
+    let lineItemIndex = <%= @proposal.line_items.size || 0 %>;
+    
+    const addButton = document.getElementById('add-line-item');
+    if (addButton) {
+      addButton.addEventListener('click', function() {
+        const template = document.getElementById('line-item-template');
+        const tbody = document.querySelector('#line-items-table tbody');
+        const newRow = template.cloneNode(true);
+        newRow.style.display = '';
+        newRow.id = '';
+        newRow.classList.add('line-item-row');
+        
+        // Update all the field names with the current index
+        const inputs = newRow.querySelectorAll('input');
+        inputs.forEach(input => {
+          input.name = input.name.replace('__INDEX__', lineItemIndex);
+        });
+        
+        // Add the new row before the template
+        tbody.insertBefore(newRow, template);
+        lineItemIndex++;
+        
+        // Add event listener to the remove button
+        const removeBtn = newRow.querySelector('.remove-line-item');
+        if (removeBtn) {
+          removeBtn.addEventListener('click', removeLineItem);
+        }
+      });
+    }
+    
+    // Add event listeners to existing remove buttons
+    document.querySelectorAll('.remove-line-item').forEach(button => {
+      button.addEventListener('click', removeLineItem);
+    });
+  }
+  
+  function removeLineItem() {
+    const row = this.closest('tr');
+    const destroyFlag = row.querySelector('.destroy-flag');
+    
+    if (destroyFlag) {
+      // Existing record - mark for destruction
+      destroyFlag.value = '1';
+      row.style.display = 'none';
+    } else {
+      // New record - just remove from DOM
+      row.remove();
+    }
+  }
+</script>

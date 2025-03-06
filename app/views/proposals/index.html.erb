@@ -1,0 +1,62 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2>Proposals for <%= @rfp.title %></h2>
+      <%= link_to "Back to RFP", rfp_path(@rfp), class: "btn btn-outline-secondary" %>
+    </div>
+    <div class="card-body">
+      <% if @proposals.empty? %>
+        <div class="alert alert-info">
+          <% if current_user.buyer? %>
+            No proposals have been submitted for this RFP yet.
+          <% else %>
+            You haven't submitted a proposal for this RFP yet.
+            <%= link_to "Create Proposal", new_rfp_proposal_path(@rfp), class: "btn btn-sm btn-primary" %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Title</th>
+                <% if current_user.buyer? %>
+                  <th>Supplier</th>
+                <% end %>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @proposals.each do |proposal| %>
+                <tr>
+                  <td><%= proposal.title %></td>
+                  <% if current_user.buyer? %>
+                    <td><%= proposal.user.company_name %></td>
+                  <% end %>
+                  <td>
+                    <span class="badge bg-<%= proposal.status == 'submitted' ? 'primary' : 
+                                         (proposal.status == 'under_review' ? 'info' : 
+                                         (proposal.status == 'accepted' ? 'success' : 
+                                         (proposal.status == 'rejected' ? 'danger' : 'warning'))) %>">
+                      <%= proposal.status.titleize %>
+                    </span>
+                  </td>
+                  <td><%= proposal.created_at.strftime('%B %d, %Y') %></td>
+                  <td>
+                    <%= link_to "View", rfp_proposal_path(@rfp, proposal), class: "btn btn-sm btn-outline-primary" %>
+                    <% if current_user.supplier? && proposal.user == current_user && 
+                          ['draft', 'submitted'].include?(proposal.status) %>
+                      <%= link_to "Edit", edit_rfp_proposal_path(@rfp, proposal), class: "btn btn-sm btn-outline-secondary" %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
